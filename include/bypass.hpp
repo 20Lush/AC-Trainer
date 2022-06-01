@@ -41,7 +41,7 @@ class Bypass{
             return PID;
         }
 
-        uintptr_t GetModuleBaseAddress(DWORD pid, const wchar_t* moduleName){
+        uintptr_t GetModuleBaseAddress(DWORD pid, const wchar_t* moduleName){ // Grabs Module's base address. Scavenges for module with same name as inputted wchar_t
 
             uintptr_t ModuleBaseAddress = 0;
             m_hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, pid);
@@ -106,7 +106,7 @@ class Bypass{
 
         };
 
-        bool Write(uintptr_t lpBaseAddress, void* lpBuffer, SIZE_T nSize, SIZE_T* LpNumberOfBytesWritten = 0){ // Generic WritePorcessmemory call. 
+        bool Write(uintptr_t lpBaseAddress, void* lpBuffer, SIZE_T nSize, SIZE_T* LpNumberOfBytesWritten = 0){ // Generic WriteProcessMemory call. 
 
             BOOL rtn_write = WriteProcessMemory(m_hProcess, (LPVOID)lpBaseAddress, lpBuffer, nSize, LpNumberOfBytesWritten);
             if(rtn_write) return true;
