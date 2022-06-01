@@ -2,6 +2,13 @@
 #include <vector>
 #include <TlHelp32.h>
 
+// TO DO HERE:
+//  - Internal reads reformatted to the class function
+//  - Figure out how handle snapshots work to see if RAII holds up
+//  - Test PID scavenger
+//  - Implement a better std::string read function
+//  - Better function intellisense comments
+
 class Bypass{
 
     private:
@@ -57,21 +64,21 @@ class Bypass{
             return ModuleBaseAddress;
         }
 
-        bool Attach(DWORD pid){
+        bool Attach(DWORD pid){ // Generic open process call, takes in process ID 
 
             m_hProcess = OpenProcess(PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION, FALSE, pid);
             if(m_hProcess != 0) return true;
             else return false;
         };
 
-        bool Read(uintptr_t lpBaseAddress, void* lpBuffer, SIZE_T nSize, SIZE_T* LpNumberOfBytesRead = 0){ //pass in the buffer address
+        bool Read(uintptr_t lpBaseAddress, void* lpBuffer, SIZE_T nSize, SIZE_T* LpNumberOfBytesRead = 0){ // Generic ReadProcessMemory call. Takes in base address, output address, size to read
 
             BOOL rtn_read = ReadProcessMemory(m_hProcess, (LPCVOID)lpBaseAddress, lpBuffer, nSize, LpNumberOfBytesRead);
             if(rtn_read) return true;
             else return false;
         };
 
-        bool ReadStdString(uintptr_t lpBaseAddress, void* lpBuffer, SIZE_T* LpNumberOfBytesRead = 0){
+        bool ReadStdString(uintptr_t lpBaseAddress, void* lpBuffer, SIZE_T* LpNumberOfBytesRead = 0){ // Experimental Read call for stdlib strings. Dumps a char[500] to the output.
 
             int array_size;
             BOOL rtn_arr_size = ReadProcessMemory(m_hProcess, (LPCVOID)(lpBaseAddress + 0x8), &array_size, sizeof(int), LpNumberOfBytesRead);
@@ -99,14 +106,14 @@ class Bypass{
 
         };
 
-        bool Write(uintptr_t lpBaseAddress, void* lpBuffer, SIZE_T nSize, SIZE_T* LpNumberOfBytesWritten = 0){ //pass in the buffer address
+        bool Write(uintptr_t lpBaseAddress, void* lpBuffer, SIZE_T nSize, SIZE_T* LpNumberOfBytesWritten = 0){ // Generic WritePorcessmemory call. 
 
             BOOL rtn_write = WriteProcessMemory(m_hProcess, (LPVOID)lpBaseAddress, lpBuffer, nSize, LpNumberOfBytesWritten);
             if(rtn_write) return true;
             else return false;
         };
 
-        uintptr_t FindDMA_addr(uintptr_t ptr, std::vector<u_int> offsets){ //processID, base address of target proces
+        uintptr_t FindDMA_addr(uintptr_t ptr, std::vector<u_int> offsets){ //processID, base address of target process
 
             uintptr_t addr = ptr;
             for(unsigned int i = 0; i < offsets.size(); i++) {
